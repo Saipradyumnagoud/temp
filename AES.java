@@ -1,60 +1,56 @@
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Base64;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
 public class AES {
+
     private static SecretKeySpec secretKey;
     private static byte[] key;
-    public static void setKet(String myKey){
-        MessageDigest sha=null;
-        try {
-            key=myKey.getBytes("UTF-8");
-            sha=MessageDigest.getInstance("SHA-1");
-            key=sha.digest(key);
-            key=Arrays.copyOf(key,16);
-            secretKey = new SecretKeySpec(key,"AES");
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }catch(UnsupportedEncodingException e){
-            e.printStackTrace();
-        }
+
+    public static void setKey(String myKey) throws Exception {
+        key = myKey.getBytes(StandardCharsets.UTF_8);
+        MessageDigest sha = MessageDigest.getInstance("SHA-1");
+        key = sha.digest(key);
+        key = Arrays.copyOf(key, 16);
+        secretKey = new SecretKeySpec(key, "AES");
     }
-    public static String encrypt(String strToEncrypt,String secret){
+
+    public static String encrypt(String strToEncrypt, String secret) {
         try {
-            setKet(secret);
-            Cipher cipher=Cipher.getInstance("AES/ECB/PKCS5Padding");
-            cipher.init(cipher.ENCRYPT_MODE,secretKey);
-            return Base64.getEncoder().encodeToString(cipher.doFinal(strToEncrypt.getBytes("UTF-8")));
+            setKey(secret);
+            Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+            return Base64.getEncoder().encodeToString(cipher.doFinal(strToEncrypt.getBytes(StandardCharsets.UTF_8)));
         } catch (Exception e) {
-            System.out.println("Error while Ecrypting: "+e.toString());
+            System.out.println("Error while Encrypting: " + e.getMessage());
+            return null;
         }
-        return null;
     }
-    public static String decrypt(String strToDecrypt,String secret){
+
+    public static String decrypt(String strToDecrypt, String secret) {
         try {
-            setKet(secret);
-            Cipher cipher=Cipher.getInstance("AES/ECB/PKCS5PADDING");
-            cipher.init(cipher.DECRYPT_MODE,secretKey);
-            return new
-            String(cipher.doFinal(Base64.getDecoder().decode(strToDecrypt)));
+            setKey(secret);
+            Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+            cipher.init(Cipher.DECRYPT_MODE, secretKey);
+            return new String(cipher.doFinal(Base64.getDecoder().decode(strToDecrypt)), StandardCharsets.UTF_8);
         } catch (Exception e) {
-            System.out.println("Error while decrypting"+e.toString());
+            System.out.println("Error while Decrypting: " + e.getMessage());
+            return null;
         }
-        return null;
     }
-    public static void main(String[] args) {
-        final String SecretKey="SecretKey6csn1";
-        String originalString="KillhimTomarror";
-        String encyrptedString=AES.encrypt(originalString, SecretKey);
-        String decryptedString=AES.decrypt(encyrptedString, SecretKey);
-        System.out.println("Original message : "+originalString);
-        System.out.println("encyrpted message : "+encyrptedString);
-        System.out.println("Decrypted message : "+decryptedString);
-           
+
+    public static void main(String[] args) throws Exception {
+        final String SecretKey = "SecretKey6csn1";
+        String originalString = "KillhimTomarror";
+        String encryptedString = AES.encrypt(originalString, SecretKey);
+        String decryptedString = AES.decrypt(encryptedString, SecretKey);
+
+        System.out.println("Original message  : " + originalString);
+        System.out.println("Encrypted message : " + encryptedString);
+        System.out.println("Decrypted message : " + decryptedString);
     }
 }
